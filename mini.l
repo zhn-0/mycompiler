@@ -17,17 +17,11 @@
 
 "if"  {  return IF;  }
 
-"then"  {  return THEN;  }
-
 "else"  {  return ELSE;  }
-
-"fi"  {  return FI;  }
 
 "while"  {  return WHILE;  }
 
 "do"  {  return DO;  }
-
-"done"  {  return DONE;  }
 
 "goto"  {  return GOTO;  }
 
