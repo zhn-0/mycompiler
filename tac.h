@@ -104,4 +104,4 @@ EXP *do_un( int unop, EXP *exp);
 EXP *do_call_ret(char *name, EXP *arglist);
 EXP *do_self_op(int mode, SYM *i);
 void error(char *str);
-int check_goto_label();
+SYM *check_goto_label();

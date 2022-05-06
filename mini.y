@@ -86,11 +86,10 @@ function : function_head '(' parameter_list ')' block
 	$$=do_func($1, $3, $5);
 	scope_local=0; /* Leave local scope. */
 	sym_tab_local=NULL; /* Clear local symbol table. */
-}
+} 
 | error
 {
 	error("Bad function syntax");
-	$$=NULL;
 }
 ;
 
@@ -131,7 +130,6 @@ statement : assignment_statement ';'
 | error
 {
 	error("Bad statement syntax");
-	$$=NULL;
 }
 ;
 
@@ -417,9 +415,10 @@ int main(int argc,   char *argv[])
 	init_lru();
 
 	yyparse();
-
-	if(check_goto_label()==-1){
-		printf("error: undeclared label\n");
+	
+	SYM *sym;
+	if((sym=check_goto_label())!=NULL){
+		fprintf(stderr, "error: undeclared label: %s\n", sym->name);
 		return 0;
 	}
 

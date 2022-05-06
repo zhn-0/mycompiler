@@ -743,12 +743,12 @@ void error(char *str)
 	exit(0);
 } 
 
-int check_goto_label()
+SYM* check_goto_label()
 {
 	SYM* t=label_tab;
 	while(t){
-		if(t->value==-1)return -1;
+		if(t->value==-1)return t;
 		t=t->next;
 	}
-	return 1;
+	return 0;
 }
