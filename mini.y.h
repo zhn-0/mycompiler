@@ -58,23 +58,18 @@ extern int yydebug;
     GE = 264,
     UMINUS = 265,
     IF = 266,
-    THEN = 267,
-    ELSE = 268,
-    FI = 269,
-    WHILE = 270,
-    DO = 271,
-    DONE = 272,
-    CONTINUE = 273,
-    FUNC = 274,
-    PRINT = 275,
-    RETURN = 276,
-    DM = 277,
-    DA = 278,
-    GOTO = 279,
-    FOR = 280,
-    INTEGER = 281,
-    IDENTIFIER = 282,
-    TEXT = 283
+    ELSE = 267,
+    WHILE = 268,
+    CONTINUE = 269,
+    PRINT = 270,
+    RETURN = 271,
+    DM = 272,
+    DA = 273,
+    GOTO = 274,
+    FOR = 275,
+    INTEGER = 276,
+    IDENTIFIER = 277,
+    TEXT = 278
   };
 #endif
 /* Tokens.  */
@@ -87,23 +82,18 @@ extern int yydebug;
 #define GE 264
 #define UMINUS 265
 #define IF 266
-#define THEN 267
-#define ELSE 268
-#define FI 269
-#define WHILE 270
-#define DO 271
-#define DONE 272
-#define CONTINUE 273
-#define FUNC 274
-#define PRINT 275
-#define RETURN 276
-#define DM 277
-#define DA 278
-#define GOTO 279
-#define FOR 280
-#define INTEGER 281
-#define IDENTIFIER 282
-#define TEXT 283
+#define ELSE 267
+#define WHILE 268
+#define CONTINUE 269
+#define PRINT 270
+#define RETURN 271
+#define DM 272
+#define DA 273
+#define GOTO 274
+#define FOR 275
+#define INTEGER 276
+#define IDENTIFIER 277
+#define TEXT 278
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
@@ -117,7 +107,7 @@ union YYSTYPE
 	TAC *tac;
 	EXP	*exp;
 
-#line 121 "mini.y.h"
+#line 111 "mini.y.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

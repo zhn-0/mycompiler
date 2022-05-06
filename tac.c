@@ -546,7 +546,7 @@ SYM *mk_text(char *text)
 	}
 
 	/* text unseen before, set up a new symbol table node, insert_sym it into the symbol table. */
-	sym=mk_sym();
+	sym=mk_sym(); 
 	sym->type=SYM_TEXT;
 	sym->name=text; /* ysj */
 	sym->label=next_label++; /* ysj */
@@ -743,4 +743,12 @@ void error(char *str)
 	exit(0);
 } 
 
-
+int check_goto_label()
+{
+	SYM* t=label_tab;
+	while(t){
+		if(t->value==-1)return -1;
+		t=t->next;
+	}
+	return 1;
+}

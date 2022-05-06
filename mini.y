@@ -418,6 +418,11 @@ int main(int argc,   char *argv[])
 
 	yyparse();
 
+	if(check_goto_label()==-1){
+		printf("error: undeclared label\n");
+		return 0;
+	}
+
 	tac_obj();
 
 	return 0;

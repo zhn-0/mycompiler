@@ -21,8 +21,6 @@
 
 "while"  {  return WHILE;  }
 
-"do"  {  return DO;  }
-
 "goto"  {  return GOTO;  }
 
 "for"  {  return FOR;  }

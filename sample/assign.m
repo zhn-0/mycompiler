@@ -6,7 +6,6 @@ main()
 	i++;
 	goto ab;
 	i++;
-	ab:
 	print(i, " ", j, "\n");
 	for(int k=0 ; k<6 ;++k){
 		for(int l=0 ;l<10;++l){
