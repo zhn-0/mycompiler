@@ -141,6 +141,21 @@ void load_reg(int r, SYM *n)
 		}
 		break;
 
+		case SYM_ARRAY:
+		n->store = n->array_base->store;
+		n->offset = n->array_base->offset + n->value*4;
+		if(n->store==1) /* local var */
+		{
+			if((n->offset)>=0) printf("	LOD R%u,(R%u+%d)\n", r, R_BP, n->offset);
+			else printf("	LOD R%u,(R%u-%d)\n", r, R_BP, -(n->offset));
+		}
+		else /* global var */
+		{
+			printf("	LOD R%u,STATIC\n", R_TP);
+			printf("	LOD R%u,(R%u+%d)\n", r, R_TP, n->offset);
+		}
+		break;
+
 		case SYM_TEXT:
 		printf("	LOD R%u,L%u\n", r, n->label);
 		break;
@@ -171,31 +186,6 @@ int get_first_reg(SYM *c)
 	clear_desc(r);
 	load_reg(r, c);
 	return r;
-
-	// for(r=R_GEN; r < R_NUM; r++)
-	// {
-	// 	if(rdesc[r].var==NULL) /* Empty register */
-	// 	{
-	// 		load_reg(r, c);
-	// 		return r;
-	// 	}
-
-	// }
-	
-	// for(r=R_GEN; r < R_NUM; r++)
-	// {
-	// 	if(!rdesc[r].modified) /* Unmodifed register */
-	// 	{
-	// 		clear_desc(r);
-	// 		load_reg(r, c);
-	// 		return r;
-	// 	}
-	// }
-
-	// spill_one(R_GEN); /* Modified register */
-	// clear_desc(R_GEN);
-	// load_reg(R_GEN, c);
-	// return R_GEN;
 } 
 
 /* Get the second reg as a source reg. Exclude the first reg. */
@@ -218,36 +208,6 @@ int get_second_reg(SYM *b, int first_reg)
 	clear_desc(r);
 	load_reg(r, b);
 	return r;
-
-	// for(r=R_GEN; r < R_NUM; r++)
-	// {
-	// 	if(rdesc[r].var==NULL) /* Empty register */
-	// 	{
-	// 		load_reg(r, b);
-	// 		return r;
-	// 	}
-	// }
-
-	// for(r=R_GEN; r < R_NUM; r++)
-	// {
-	// 	if(!rdesc[r].modified && (r != first_reg)) /* Unmodifed register */
-	// 	{
-	// 		clear_desc(r);
-	// 		load_reg(r, b);
-	// 		return r;
-	// 	}
-	// }
-
-	// for(r=R_GEN; r < R_NUM; r++)
-	// {
-	// 	if(r != first_reg) /* Modified register */
-	// 	{
-	// 		spill_one(r);
-	// 		clear_desc(r);
-	// 		load_reg(r, b);
-	// 		return r;
-	// 	}
-	// }
 }
 
 void asm_bin(char *op, SYM *a, SYM *b, SYM *c)
@@ -335,7 +295,13 @@ void asm_cmp(int op, SYM *a, SYM *b, SYM *c)
 void asm_copy(SYM *a, SYM *b)
 {
 	int reg1=get_first_reg(b); /* Load b into a register */
-	insert_desc(reg1, a, MODIFIED); /* Indicate a is there */
+	if(a->type==SYM_ARRAY)
+	{
+		a->store = a->array_base->store;
+		a->offset = a->array_base->offset + 4*a->value;
+		if(a->store == 1)printf("	STO (R%d+%d),R%d\n", R_BP, a->offset, reg1);
+		else printf("	LOD R4,STATIC\n	STO (R%d+%d),R%d\n", R_TP, a->offset, reg1);
+	}else insert_desc(reg1, a, MODIFIED); /* Indicate a is there */
 }    
 
 void asm_cond(char *op, SYM *a,  char *l)
@@ -481,6 +447,13 @@ void asm_static(void)
 	printf("STACK:\n");
 }
 
+void store_to_mem(SYM *sym)
+{
+	if(sym->type!=SYM_ARRAY)return;
+
+	printf("	# STO (R%d+%d),R%d", R_BP, sym->offset, R_BP);
+}
+
 void asm_code(TAC *c)
 {
 	int r;
@@ -582,6 +555,21 @@ void asm_code(TAC *c)
 			c->a->store=0; /* global var */
 			c->a->offset=tos;
 			tos +=4;
+		}
+		return;
+
+		case TAC_ARRAY_DECLARE:
+		if(scope_local)
+		{
+			c->a->store=1; /* local array */
+			c->a->offset=tof;
+			tof += 4 * c->a->value;
+		}
+		else
+		{
+			c->a->store=0; /* global array */
+			c->a->offset=tos;
+			tos += 4 * c->a->value;
 		}
 		return;
 

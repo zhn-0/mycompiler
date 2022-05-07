@@ -79,6 +79,10 @@ variable : IDENTIFIER
 	$$=declare_var($1);
 	$$=join_tac($$, do_assign(get_var($1), $3));
 }
+| IDENTIFIER '[' INTEGER ']'
+{
+	$$=declare_array($1, atoi($3));
+}
 ;
 
 function : function_head '(' parameter_list ')' block
@@ -182,6 +186,10 @@ assignment_statement : IDENTIFIER '=' expression
 {
 	$$=do_assign(get_var($1), $3);
 }
+| IDENTIFIER '[' INTEGER ']' '=' expression
+{
+	$$=do_assign(get_array_element($1, $3), $6);
+}
 ;
 
 expression : expression '+' expression
@@ -255,6 +263,10 @@ expression : expression '+' expression
 | IDENTIFIER
 {
 	$$=mk_exp(NULL, get_var($1), NULL);
+}
+| IDENTIFIER '[' INTEGER ']'
+{
+	$$=mk_exp(NULL, get_array_element($1, $3), NULL);
 }
 | call_expression
 {

@@ -102,6 +102,37 @@ SYM *mk_var(char *name)
 	return sym;
 }
 
+SYM *mk_array(char *name, int size)
+{
+	SYM *sym=NULL;
+
+	if(scope_local)  
+		sym=lookup_sym(sym_tab_local,name);
+	else
+		sym=lookup_sym(sym_tab_global,name);
+
+	/* var already declared */
+	if(sym!=NULL)
+	{
+		error("array already declared");
+		return NULL;
+	}
+
+	/* var unseen before, set up a new symbol table node, insert_sym it into the symbol table. */
+	sym=mk_sym();
+	sym->type=SYM_ARRAY;
+	sym->name=name; /* ysj */
+	sym->offset=-1; /* Unset address */
+	sym->value=size;
+
+	if(scope_local)  
+		insert_sym(&sym_tab_local,sym);
+	else
+		insert_sym(&sym_tab_global,sym);
+
+	return sym;
+}
+
 TAC *join_tac(TAC *c1, TAC *c2)
 {
 	TAC *t;
@@ -121,6 +152,11 @@ TAC *join_tac(TAC *c1, TAC *c2)
 TAC *declare_var(char *name)
 {
 	return mk_tac(TAC_VAR,mk_var(name),NULL,NULL);
+}
+
+TAC *declare_array(char *name, int size)
+{
+	return mk_tac(TAC_ARRAY_DECLARE, mk_array(name, size), NULL, NULL);
 }
 
 TAC *mk_tac(int op, SYM *a, SYM *b, SYM *c)
@@ -219,7 +255,7 @@ TAC *do_assign(SYM *var, EXP *exp)
 {
 	TAC *code;
 
-	if(var->type !=SYM_VAR) error("assignment to non-variable");
+	if(var->type !=SYM_VAR && var->type != SYM_ARRAY) error("assignment to non-variable");
 
 	code=mk_tac(TAC_COPY, var, exp->ret, NULL);
 	code->prev=exp->tac;
@@ -506,6 +542,50 @@ SYM *get_var(char *name)
 	return sym;
 }
 
+SYM *get_array_element(char *name, char *index)
+{
+	SYM *sym=NULL; /* Pointer to looked up symbol */
+
+	if(scope_local) sym=lookup_sym(sym_tab_local,name);
+
+	if(sym==NULL) sym=lookup_sym(sym_tab_global,name);
+
+	if(sym==NULL)
+	{
+		error("name not declared as local/global array");
+		return NULL;
+	}
+
+	if(sym->type!=SYM_ARRAY)
+	{
+		error("not a array");
+		return NULL;
+	}
+
+	int i=atoi(index);
+
+	if(i>=sym->value)
+	{
+		error("out of array range");
+		return NULL;
+	}
+
+	int l1=strlen(name), l2=strlen(index);
+
+	name=(char *)realloc(name, l1+l2+2);
+
+	sprintf(name, "%s[%s]", name, index);
+	free(index);
+
+	SYM *ret=mk_sym();
+	ret->type = SYM_ARRAY;
+	ret->name = name;
+	ret->array_base = sym;
+	ret->value = i;
+
+	return ret;
+}
+
 SYM *get_label(char *label)
 {
 	SYM *sym = NULL; /* Pointer to looked up symbol */
@@ -597,6 +677,7 @@ char *to_str(SYM *s, char *str)
 	{
 		case SYM_FUNC:
 		case SYM_VAR:
+		case SYM_ARRAY:
 		/* Just return the name */
 		return s->name; /* ysj */
 
@@ -708,6 +789,10 @@ void tac_print(TAC *i)
 
 		case TAC_VAR:
 		printf("var %s", to_str(i->a, sa));
+		break;
+
+		case TAC_ARRAY_DECLARE:
+		printf("array %s[%d]", to_str(i->a, sa), i->a->value);
 		break;
 
 		case TAC_BEGINFUNC:

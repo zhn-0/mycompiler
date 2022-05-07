@@ -5,6 +5,7 @@
 #define SYM_TEXT 3
 #define SYM_INT 4
 #define SYM_LABEL 5
+#define SYM_ARRAY 6
 
 /* type of tac */ 
 #define TAC_UNDEF 0 /* undefine */
@@ -30,6 +31,7 @@
 #define TAC_ACTUAL 20 /* actual a */
 #define TAC_CALL 21 /* a=call b */
 #define TAC_RETURN 22 /* return a */
+#define TAC_ARRAY_DECLARE 23 /*int a[10]*/
 
 /* struct */
 typedef struct sym
@@ -50,6 +52,7 @@ typedef struct sym
 	int label;
 	struct tac *address; /* SYM_FUNC */	
 	struct sym *next;
+	struct sym *array_base;
 } SYM;
 
 typedef struct tac /* TAC instruction node */
@@ -87,9 +90,11 @@ EXP *mk_exp(EXP *next, SYM *ret, TAC *code);
 TAC *join_tac(TAC *c1, TAC *c2);
 SYM *get_var(char *name);
 SYM *get_label(char *label);
+SYM *get_array_element(char *name, char *index);
 SYM *declare_func(char *name);
 TAC *declare_var(char *name);
 TAC *declare_para(char *name);
+TAC *declare_array(char *name, int size);
 TAC *do_func(SYM *name,    TAC *args, TAC *code);
 TAC *do_assign(SYM *var, EXP *exp);
 TAC *do_call(char *name, EXP *arglist);
