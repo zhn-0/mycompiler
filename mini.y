@@ -30,7 +30,7 @@ void yyerror(char* msg);
 %type <tac> program function_declaration_list function_declaration function parameter_list variable_list variable statement
 %type <tac> assignment_statement print_statement print_list print_item return_statement null_statement if_statement while_statement
 %type <tac> call_statement block declaration_list declaration statement_list
-%type <tac> self_statement goto_statement label_statement for_statement for_declaration
+%type <tac> self_statement goto_statement label_statement for_statement for_declaration for_behind
 %type <exp> argument_list expression_list expression call_expression
 %type <sym> function_head
 
@@ -370,7 +370,11 @@ for_declaration :
 }
 ;
 
-for_statement : FOR '(' for_declaration ';' expression ';' expression ')' block
+for_behind : assignment_statement
+| self_statement
+;
+
+for_statement : FOR '(' for_declaration ';' expression ';' for_behind ')' block
 {
 	$$=do_for($3, $5, $7, $9);
 }

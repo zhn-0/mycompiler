@@ -496,15 +496,13 @@ TAC *do_while(EXP *exp, TAC *stmt)
 	return join_tac(label, do_if(exp, code));
 }
 
-TAC *do_for(TAC *declaration, EXP *exp1, EXP *exp2, TAC *stmt)
+TAC *do_for(TAC *declaration, EXP *exp1, TAC *exp2, TAC *stmt)
 {
 	TAC *label = mk_tac(TAC_LABEL, mk_label(mk_lstr(next_label++)), NULL, NULL);
 	label->prev = declaration;
 	TAC *code = mk_tac(TAC_GOTO, label->a, NULL, NULL);
 
-	exp2->tac->prev = stmt;
-
-	code->prev = exp2->tac; /* Bolt on the goto */
+	code->prev = join_tac(stmt, exp2); /* Bolt on the goto */
 
 	return join_tac(label, do_if(exp1, code));
 }

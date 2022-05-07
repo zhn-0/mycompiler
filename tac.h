@@ -102,7 +102,7 @@ TAC *do_lib(char *name, SYM *arg);
 TAC *do_if(EXP *exp, TAC *stmt);
 TAC *do_test(EXP *exp, TAC *stmt1, TAC *stmt2);
 TAC *do_while(EXP *exp, TAC *stmt);
-TAC *do_for(TAC *declaration, EXP *exp1, EXP *exp2, TAC *stmt);
+TAC *do_for(TAC *declaration, EXP *exp1, TAC *exp2, TAC *stmt);
 EXP *do_bin( int binop, EXP *exp1, EXP *exp2);
 EXP *do_cmp( int binop, EXP *exp1, EXP *exp2);
 EXP *do_un( int unop, EXP *exp);
