@@ -53,6 +53,7 @@ typedef struct sym
 	struct tac *address; /* SYM_FUNC */	
 	struct sym *next;
 	struct sym *array_base;
+	struct sym *array_index;
 } SYM;
 
 typedef struct tac /* TAC instruction node */
@@ -90,7 +91,7 @@ EXP *mk_exp(EXP *next, SYM *ret, TAC *code);
 TAC *join_tac(TAC *c1, TAC *c2);
 SYM *get_var(char *name);
 SYM *get_label(char *label);
-SYM *get_array_element(char *name, char *index);
+SYM *get_array_element(char *name, EXP *index);
 SYM *declare_func(char *name);
 TAC *declare_var(char *name);
 TAC *declare_para(char *name);
@@ -110,3 +111,4 @@ EXP *do_call_ret(char *name, EXP *arglist);
 EXP *do_self_op(int mode, SYM *i);
 void error(char *str);
 SYM *check_goto_label();
+void print(SYM *sym);

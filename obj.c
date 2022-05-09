@@ -143,16 +143,39 @@ void load_reg(int r, SYM *n)
 
 		case SYM_ARRAY:
 		n->store = n->array_base->store;
-		n->offset = n->array_base->offset + n->value*4;
-		if(n->store==1) /* local var */
+		if(n->array_index->type==SYM_INT)
 		{
-			if((n->offset)>=0) printf("	LOD R%u,(R%u+%d)\n", r, R_BP, n->offset);
-			else printf("	LOD R%u,(R%u-%d)\n", r, R_BP, -(n->offset));
-		}
-		else /* global var */
-		{
-			printf("	LOD R%u,STATIC\n", R_TP);
-			printf("	LOD R%u,(R%u+%d)\n", r, R_TP, n->offset);
+			n->offset = n->array_base->offset + n->array_index->value * 4;
+			if (n->store == 1) /* local var */
+			{
+				if ((n->offset) >= 0)
+					printf("	LOD R%u,(R%u+%d)\n", r, R_BP, n->offset);
+				else
+					printf("	LOD R%u,(R%u-%d)\n", r, R_BP, -(n->offset));
+			}
+			else /* global var */
+			{
+				printf("	LOD R%u,STATIC\n", R_TP);
+				printf("	LOD R%u,(R%u+%d)\n", r, R_TP, n->offset);
+			}
+		}else{
+			int rt=get_first_reg(n->array_index);
+			int rtmp=get_r();
+			printf("	LOD R%d,4\n",rtmp);
+			printf("	MUL R%d,R%d\n",rt, rtmp);
+			printf("	LOD R%d,%d\n", rtmp, n->array_base->offset);
+			printf("	ADD R%d,R%d\n", rt, rtmp);
+			if (n->store == 1) /* local var */
+			{
+				printf("	ADD R%d,R%d\n", rt, R_BP);
+				printf("	LOD R%u,(R%d)\n", r, rt);
+			}
+			else /* global var */
+			{
+				printf("	ADD R%d,R%d\n", rt, R_TP);
+				printf("	LOD R%u,STATIC\n", R_TP);
+				printf("	LOD R%u,(R%d)\n", r, rt);
+			}
 		}
 		break;
 
@@ -298,9 +321,22 @@ void asm_copy(SYM *a, SYM *b)
 	if(a->type==SYM_ARRAY)
 	{
 		a->store = a->array_base->store;
-		a->offset = a->array_base->offset + 4*a->value;
-		if(a->store == 1)printf("	STO (R%d+%d),R%d\n", R_BP, a->offset, reg1);
-		else printf("	LOD R4,STATIC\n	STO (R%d+%d),R%d\n", R_TP, a->offset, reg1);
+		int rt = get_first_reg(a->array_index);
+		int rtmp = get_r();
+		printf("	LOD R%d,4\n", rtmp);
+		printf("	MUL R%d,R%d\n", rt, rtmp);
+		printf("	LOD R%d,%d\n", rtmp, a->array_base->offset);
+		printf("	ADD R%d,R%d\n", rt, rtmp);
+		if (a->store == 1) /* local var */
+		{
+			printf("	ADD R%d,R%d\n", rt, R_BP);
+			printf("	STO (R%d),R%d\n", rt, reg1);
+		}
+		else /* global var */
+		{
+			printf("	ADD R%d,R%d\n", rt, R_TP);
+			printf("	LOD R4,STATIC\n	STO (R%d),R%d\n", rt, reg1);
+		}
 	}else insert_desc(reg1, a, MODIFIED); /* Indicate a is there */
 }    
 

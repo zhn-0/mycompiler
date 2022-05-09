@@ -540,7 +540,12 @@ SYM *get_var(char *name)
 	return sym;
 }
 
-SYM *get_array_element(char *name, char *index)
+void print(SYM *sym)
+{
+	fprintf(stderr, "type:%d store:%d name:%s value:%d\n", sym->type, sym->store, sym->name, sym->value);
+}
+
+SYM *get_array_element(char *name, EXP *index)
 {
 	SYM *sym=NULL; /* Pointer to looked up symbol */
 
@@ -560,26 +565,28 @@ SYM *get_array_element(char *name, char *index)
 		return NULL;
 	}
 
-	int i=atoi(index);
-
-	if(i>=sym->value)
+	if(index->ret->type==SYM_INT && index->ret->value>=sym->value)
 	{
 		error("out of array range");
 		return NULL;
 	}
 
-	int l1=strlen(name), l2=strlen(index);
-
-	name=(char *)realloc(name, l1+l2+2);
-
-	sprintf(name, "%s[%s]", name, index);
-	free(index);
+	int l1=strlen(name), l2=10;
+	// print(index->ret);
+	if(index->ret->type == SYM_INT){
+		name=(char *)realloc(name, l1+l2+2);
+		sprintf(name, "%s[%d]", name, index->ret->value);
+	}else{
+		l2 = strlen(index->ret->name);
+		name=(char *)realloc(name, l1+l2+2);
+		sprintf(name, "%s[%s]", name, index->ret->name);
+	}	
 
 	SYM *ret=mk_sym();
 	ret->type = SYM_ARRAY;
 	ret->name = name;
 	ret->array_base = sym;
-	ret->value = i;
+	ret->array_index = index->ret;
 
 	return ret;
 }

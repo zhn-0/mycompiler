@@ -186,9 +186,9 @@ assignment_statement : IDENTIFIER '=' expression
 {
 	$$=do_assign(get_var($1), $3);
 }
-| IDENTIFIER '[' INTEGER ']' '=' expression
+| IDENTIFIER '[' expression ']' '=' expression
 {
-	$$=do_assign(get_array_element($1, $3), $6);
+	$$=join_tac($3->tac, do_assign(get_array_element($1, $3), $6));
 }
 ;
 
@@ -264,9 +264,9 @@ expression : expression '+' expression
 {
 	$$=mk_exp(NULL, get_var($1), NULL);
 }
-| IDENTIFIER '[' INTEGER ']'
+| IDENTIFIER '[' expression ']'
 {
-	$$=mk_exp(NULL, get_array_element($1, $3), NULL);
+	$$=mk_exp(NULL, get_array_element($1, $3), $3->tac);
 }
 | call_expression
 {
