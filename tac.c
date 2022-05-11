@@ -593,9 +593,15 @@ SYM *get_array_element(char *name, SYM *index)
 
 EXP *do_array_exp(char *name, EXP* exp)
 {
-	TAC *temp=mk_tac(TAC_VAR, mk_tmp(), NULL, NULL);
-	TAC *code=do_assign(temp->a, exp);
-	code=join_tac(temp, code);
+	TAC *temp, *code;
+	if(exp->ret->type==SYM_INT || exp->ret->offset==-2)
+	{
+		code = exp->tac;
+		return mk_exp(NULL, get_array_element(name, exp->ret), code);
+	}
+	temp = mk_tac(TAC_VAR, mk_tmp(), NULL, NULL);
+	code = do_assign(temp->a, exp);
+	code = join_tac(temp, code);
 	return mk_exp(NULL, get_array_element(name, code->a), code);
 }
 
