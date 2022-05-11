@@ -188,7 +188,8 @@ assignment_statement : IDENTIFIER '=' expression
 }
 | IDENTIFIER '[' expression ']' '=' expression
 {
-	$$=join_tac($3->tac, do_assign(get_array_element($1, $3), $6));
+	EXP *exp=do_array_exp($1, $3);
+	$$=join_tac(exp->tac, do_assign(exp->ret, $6));
 }
 ;
 
@@ -266,7 +267,7 @@ expression : expression '+' expression
 }
 | IDENTIFIER '[' expression ']'
 {
-	$$=mk_exp(NULL, get_array_element($1, $3), $3->tac);
+	$$=do_array_exp($1, $3);
 }
 | call_expression
 {

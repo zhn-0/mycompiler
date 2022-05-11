@@ -5,6 +5,8 @@
 #include "tac.h"
 #include "obj.h"
 
+int get_first_reg(SYM *c);
+
 void init_lru()
 {
 	lru_head = (pLRU)malloc(sizeof(struct LRU));
@@ -217,8 +219,10 @@ int get_second_reg(SYM *b, int first_reg)
 	int r;
 	for(r=R_GEN; r < R_NUM; r++)
 	{
-		if(rdesc[r].var==b) /* Already in register */
-		return r;
+		if(rdesc[r].var==b){/* Already in register */
+			spill_one(r);
+			return r;
+		}
 	}
 
 	r = get_r();

@@ -209,7 +209,9 @@ SYM *mk_tmp(void)
 
 	name=malloc(12);
 	sprintf(name, "t%d", next_tmp++); /* Set up text */
-	return mk_var(name);
+	sym = mk_var(name);
+	sym->offset=-2;
+	return sym;
 }
 
 TAC *declare_para(char *name)
@@ -542,10 +544,10 @@ SYM *get_var(char *name)
 
 void print(SYM *sym)
 {
-	fprintf(stderr, "type:%d store:%d name:%s value:%d\n", sym->type, sym->store, sym->name, sym->value);
+	fprintf(stderr, "type:%d store:%d name:%s value:%d offset:%d\n", sym->type, sym->store, sym->name, sym->value, sym->offset);
 }
 
-SYM *get_array_element(char *name, EXP *index)
+SYM *get_array_element(char *name, SYM *index)
 {
 	SYM *sym=NULL; /* Pointer to looked up symbol */
 
@@ -565,30 +567,36 @@ SYM *get_array_element(char *name, EXP *index)
 		return NULL;
 	}
 
-	if(index->ret->type==SYM_INT && index->ret->value>=sym->value)
+	if(index->type==SYM_INT && index->value>=sym->value)
 	{
 		error("out of array range");
 		return NULL;
 	}
 
 	int l1=strlen(name), l2=10;
-	// print(index->ret);
-	if(index->ret->type == SYM_INT){
+	if(index->type == SYM_INT){
 		name=(char *)realloc(name, l1+l2+2);
-		sprintf(name, "%s[%d]", name, index->ret->value);
+		sprintf(name, "%s[%d]", name, index->value);
 	}else{
-		l2 = strlen(index->ret->name);
+		l2 = strlen(index->name);
 		name=(char *)realloc(name, l1+l2+2);
-		sprintf(name, "%s[%s]", name, index->ret->name);
-	}	
-
+		sprintf(name, "%s[%s]", name, index->name);
+	}
 	SYM *ret=mk_sym();
 	ret->type = SYM_ARRAY;
 	ret->name = name;
 	ret->array_base = sym;
-	ret->array_index = index->ret;
+	ret->array_index = index;
 
 	return ret;
+}
+
+EXP *do_array_exp(char *name, EXP* exp)
+{
+	TAC *temp=mk_tac(TAC_VAR, mk_tmp(), NULL, NULL);
+	TAC *code=do_assign(temp->a, exp);
+	code=join_tac(temp, code);
+	return mk_exp(NULL, get_array_element(name, code->a), code);
 }
 
 SYM *get_label(char *label)
