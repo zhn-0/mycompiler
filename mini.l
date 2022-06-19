@@ -9,7 +9,7 @@
 
 "int"  {  return INT;  }
 
-"print"  {  return PRINT;  }
+"printf"  {  return PRINT;  }
 
 "return"  {  return RETURN;  }
 
@@ -56,7 +56,7 @@
 
 "--"  {  return DM;  }
 
-[ \t\r\n]|#.*
+[ \t\r\n]|#.*|\/\/.*
 
 . 	{	return *yytext; }
 

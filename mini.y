@@ -288,16 +288,16 @@ argument_list           :
 ;
 
 expression_list : expression
-|  expression_list ',' expression
+|  expression ',' expression_list 
 {
-	$3->next=$1;
-	$$=$3;
+	$1->next=$3;
+	$$=$1;
 }
 ;
 
 print_statement : PRINT '(' print_list ')'
 {
-	$$=$3;
+	$$=join_tac($3, mk_tac(TAC_CALL, NULL, (SYM *)strdup("printf"), NULL));
 }               
 ;
 
@@ -311,11 +311,11 @@ print_list : print_item
 print_item : expression
 {
 	$$=join_tac($1->tac,
-	do_lib("PRINTN", $1->ret));
+	mk_tac(TAC_ACTUAL, $1->ret, NULL, NULL));
 }
 | TEXT
 {
-	$$=do_lib("PRINTS", mk_text($1));
+	$$=mk_tac(TAC_ACTUAL, mk_text($1), NULL, NULL);
 }
 ;
 
@@ -407,7 +407,7 @@ int main(int argc,   char *argv[])
 		exit(0);
 	}
 	
-	char *input, *output;
+	char *input, *output, *outputTac;
 
 	input = argv[1];
 	if(freopen(input, "r", stdin)==NULL)
@@ -417,19 +417,30 @@ int main(int argc,   char *argv[])
 	}
 
 	output=(char *)malloc(strlen(input + 10));
+	outputTac=(char *)malloc(strlen(input + 10));
 	strcpy(output,input);
+	strcpy(outputTac,input);
 	strcat(output,".s");
+	strcat(outputTac,".t");
+
+	tac_init();
+	init_lru();
+
+	yyparse();
+
+	if(freopen(outputTac, "w", stdout)==NULL)
+	{
+		printf("error: open %s failed\n", output);
+		return 0;
+	}
+
+	tac_dump();
 
 	if(freopen(output, "w", stdout)==NULL)
 	{
 		printf("error: open %s failed\n", output);
 		return 0;
 	}
-
-	tac_init();
-	init_lru();
-
-	yyparse();
 	
 	SYM *sym;
 	if((sym=check_goto_label())!=NULL){
